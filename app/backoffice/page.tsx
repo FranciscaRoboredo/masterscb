@@ -1,0 +1,74 @@
+import { listAthletes } from "./actions";
+import { InviteAthleteForm } from "./invite-athlete-form";
+
+export default async function BackofficePage() {
+  const athletes = await listAthletes();
+
+  return (
+    <main className="mx-auto max-w-4xl px-4 py-8">
+      <h1 className="text-2xl font-semibold text-neutral-900">Backoffice</h1>
+      <p className="mt-1 text-sm text-neutral-500">
+        Adiciona atletas manualmente. É criada uma conta e enviado um email
+        com um link de acesso — sem registo aberto.
+      </p>
+
+      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">
+          Adicionar atleta
+        </h2>
+        <div className="mt-4">
+          <InviteAthleteForm />
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold text-neutral-900">
+          Atletas ({athletes.length})
+        </h2>
+        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
+          <table className="min-w-full divide-y divide-neutral-200 text-sm">
+            <thead className="bg-neutral-50">
+              <tr>
+                <Th>Nome</Th>
+                <Th>Email</Th>
+                <Th>Telefone</Th>
+                <Th>Clube</Th>
+                <Th>Adicionada em</Th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {athletes.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-neutral-400">
+                    Ainda não há atletas.
+                  </td>
+                </tr>
+              )}
+              {athletes.map((athlete) => (
+                <tr key={athlete.id}>
+                  <Td>{athlete.full_name || "—"}</Td>
+                  <Td>{athlete.email}</Td>
+                  <Td>{athlete.phone || "—"}</Td>
+                  <Td>{athlete.club || "—"}</Td>
+                  <Td>{new Date(athlete.created_at).toLocaleDateString("pt-PT")}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function Th({ children }: { children: React.ReactNode }) {
+  return (
+    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+      {children}
+    </th>
+  );
+}
+
+function Td({ children }: { children: React.ReactNode }) {
+  return <td className="px-4 py-3 text-neutral-700">{children}</td>;
+}
