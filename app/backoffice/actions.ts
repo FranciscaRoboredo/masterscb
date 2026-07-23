@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createEphemeralClient } from "@/lib/supabase/ephemeral";
@@ -30,12 +31,18 @@ export async function inviteAthlete(
     return { error: "Nome e email são obrigatórios." };
   }
 
+  const headersList = headers();
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const emailRedirectTo = `${protocol}://${host}/auth/callback`;
+
   // Ephemeral client: does not touch the coach's own session cookies.
   const supabase = createEphemeralClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: true,
+      emailRedirectTo,
       data: {
         full_name: fullName,
         role: "athlete",
