@@ -11,6 +11,10 @@ export function createEphemeralClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Implicit flow: this invite is issued by the coach, but completed by
+      // the athlete in a different browser, so there's no shared PKCE code
+      // verifier to validate against later. See lib/supabase/client.ts.
+      auth: { flowType: "implicit" },
       cookies: {
         getAll() {
           return [];
