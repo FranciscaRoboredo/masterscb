@@ -11,6 +11,7 @@ import { CatalogEventsForm } from "./catalog-events-form";
 import { PublishToggle } from "./publish-toggle";
 import { EventItem } from "./event-item";
 import { EditCompetitionForm } from "./edit-competition-form";
+import { DeleteCompetitionButton } from "./delete-competition-button";
 import { LocationLink } from "@/components/location-link";
 import { ConvocatoriaUploadForm } from "@/components/convocatoria-upload-form";
 import { ConvocatoriaList } from "@/components/convocatoria-list";
@@ -92,8 +93,9 @@ export default async function CompetitionDetailPage({
         </div>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-2 flex items-center gap-4">
         <EditCompetitionForm competition={competition} />
+        <DeleteCompetitionButton competitionId={competition.id} competitionName={competition.name} />
       </div>
 
       {!competition.published && (

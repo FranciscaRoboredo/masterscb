@@ -308,6 +308,29 @@ export async function updateCompetition(
   return { success: true };
 }
 
+export async function deleteCompetition(competitionId: string): Promise<ActionResult> {
+  await requireCoach();
+
+  const supabase = createClient();
+
+  const { data: files } = await supabase.storage.from("convocatorias").list(competitionId);
+  if (files && files.length > 0) {
+    await supabase.storage
+      .from("convocatorias")
+      .remove(files.map((f) => `${competitionId}/${f.name}`));
+  }
+
+  const { error } = await supabase.from("competitions").delete().eq("id", competitionId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/backoffice/competitions");
+  revalidatePath("/backoffice");
+  revalidatePath("/dashboard/provas");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function setPublished(
   competitionId: string,
   published: boolean
