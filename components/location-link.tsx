@@ -7,7 +7,6 @@ export function LocationLink({ location, className }: { location: string; classN
       target="_blank"
       rel="noopener noreferrer"
       className={className ?? "text-neutral-500 underline decoration-dotted hover:text-neutral-900"}
-      onClick={(e) => e.stopPropagation()}
     >
       {location}
     </a>
