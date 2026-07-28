@@ -10,6 +10,8 @@ import { NewEventForm } from "./new-event-form";
 import { CatalogEventsForm } from "./catalog-events-form";
 import { PublishToggle } from "./publish-toggle";
 import { EventItem } from "./event-item";
+import { EditCompetitionForm } from "./edit-competition-form";
+import { LocationLink } from "@/components/location-link";
 
 function formatDate(date: string) {
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-PT", {
@@ -53,18 +55,27 @@ export default async function CompetitionDetailPage({
             {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
             {competition.end_date !== competition.start_date &&
               ` – ${new Date(`${competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
-            {competition.location ? ` · ${competition.location}` : ""}
+            {competition.location && (
+              <>
+                {" · "}
+                <LocationLink location={competition.location} />
+              </>
+            )}
+            {competition.counts_for_cem && (
+              <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                CEM
+              </span>
+            )}
           </p>
           <p className="mt-1 text-sm text-neutral-500">
-            Inscrições:{" "}
-            {competition.registration_start
-              ? new Date(`${competition.registration_start}T00:00:00`).toLocaleDateString("pt-PT")
-              : "sem data de início"}{" "}
-            até{" "}
+            Inscrições até{" "}
             {competition.registration_end
               ? new Date(`${competition.registration_end}T00:00:00`).toLocaleDateString("pt-PT")
-              : "sem data de fim"}
+              : "sem data limite definida"}
           </p>
+          {competition.notes && (
+            <p className="mt-1 text-sm text-neutral-500">{competition.notes}</p>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2">
           <PublishToggle competitionId={competition.id} published={competition.published} />
@@ -75,6 +86,10 @@ export default async function CompetitionDetailPage({
             Gerir resultados →
           </Link>
         </div>
+      </div>
+
+      <div className="mt-2">
+        <EditCompetitionForm competition={competition} />
       </div>
 
       {!competition.published && (

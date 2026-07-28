@@ -48,6 +48,7 @@ export interface Database {
           registration_start: string | null;
           registration_end: string | null;
           published: boolean;
+          counts_for_cem: boolean;
           notes: string | null;
           created_at: string;
         };
@@ -59,6 +60,7 @@ export interface Database {
           registration_start?: string | null;
           registration_end?: string | null;
           published?: boolean;
+          counts_for_cem?: boolean;
           notes?: string | null;
         };
         Update: {
@@ -68,6 +70,7 @@ export interface Database {
           end_date?: string;
           registration_start?: string | null;
           registration_end?: string | null;
+          counts_for_cem?: boolean;
           published?: boolean;
           notes?: string | null;
         };

@@ -1,6 +1,7 @@
 import { listUpcomingCompetitions } from "./actions";
 import { RegisterButton } from "./register-button";
 import { RelayQuestion } from "./relay-question";
+import { LocationLink } from "@/components/location-link";
 
 export default async function ProvasPage() {
   const competitions = await listUpcomingCompetitions();
@@ -23,7 +24,14 @@ export default async function ProvasPage() {
           return (
             <div key={competition.id} className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="font-medium text-neutral-900">{competition.name}</h2>
+                <h2 className="font-medium text-neutral-900">
+                  {competition.name}
+                  {competition.counts_for_cem && (
+                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                      CEM
+                    </span>
+                  )}
+                </h2>
                 <span className="text-sm text-neutral-500">
                   {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
                   {competition.end_date !== competition.start_date &&
@@ -31,7 +39,9 @@ export default async function ProvasPage() {
                 </span>
               </div>
               {competition.location && (
-                <p className="mt-1 text-sm text-neutral-500">{competition.location}</p>
+                <p className="mt-1 text-sm">
+                  <LocationLink location={competition.location} />
+                </p>
               )}
 
               {!competition.registrationOpen && (

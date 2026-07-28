@@ -48,6 +48,11 @@ export default async function CompetitionsPage() {
               >
                 {c.published ? "Publicada" : "Rascunho"}
               </span>
+              {c.counts_for_cem && (
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                  CEM
+                </span>
+              )}
             </div>
           </Link>
         ))}

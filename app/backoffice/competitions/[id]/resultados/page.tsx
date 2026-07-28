@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCompetition, listEventsWithDetails, listAllAthletes } from "../../actions";
 import { AddResultForm } from "../add-result-form";
+import { LocationLink } from "@/components/location-link";
 
 export default async function CompetitionResultsPage({
   params,
@@ -29,7 +30,12 @@ export default async function CompetitionResultsPage({
         {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
         {competition.end_date !== competition.start_date &&
           ` – ${new Date(`${competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
-        {competition.location ? ` · ${competition.location}` : ""}
+        {competition.location && (
+          <>
+            {" · "}
+            <LocationLink location={competition.location} />
+          </>
+        )}
       </p>
 
       <section className="mt-6 space-y-6">

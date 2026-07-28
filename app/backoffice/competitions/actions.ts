@@ -216,8 +216,64 @@ export async function createCompetition(
   const location = String(formData.get("location") ?? "").trim();
   const startDate = String(formData.get("start_date") ?? "").trim();
   const endDate = String(formData.get("end_date") ?? "").trim() || startDate;
-  const registrationStart = String(formData.get("registration_start") ?? "").trim();
   const registrationEnd = String(formData.get("registration_end") ?? "").trim();
+  const countsForCem = formData.get("counts_for_cem") === "on";
+  const notes = String(formData.get("notes") ?? "").trim();
+  const eventNames = formData.getAll("event_names").map(String);
+
+  if (!name || !startDate) {
+    return { error: "Nome e data de início são obrigatórios." };
+  }
+
+  if (endDate < startDate) {
+    return { error: "A data de fim não pode ser antes da data de início." };
+  }
+
+  const supabase = createClient();
+  const payload: Database["public"]["Tables"]["competitions"]["Insert"] = {
+    name,
+    location: location || null,
+    start_date: startDate,
+    end_date: endDate,
+    registration_end: registrationEnd || null,
+    published: false,
+    counts_for_cem: countsForCem,
+    notes: notes || null,
+  };
+  // postgrest-js's insert() generic fails to resolve against our hand-written
+  // Database type; the payload above is already checked against Insert.
+  const { data: competition, error } = await supabase
+    .from("competitions")
+    .insert(payload as never)
+    .select("*")
+    .single<Competition>();
+
+  if (error) return { error: error.message };
+
+  if (eventNames.length > 0) {
+    const eventsPayload: Database["public"]["Tables"]["competition_events"]["Insert"][] = eventNames.map(
+      (eventName) => ({ competition_id: competition.id, name: eventName, event_date: startDate })
+    );
+    await supabase.from("competition_events").insert(eventsPayload as never);
+  }
+
+  revalidatePath("/backoffice/competitions");
+  return { success: true };
+}
+
+export async function updateCompetition(
+  competitionId: string,
+  _prevState: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  await requireCoach();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const location = String(formData.get("location") ?? "").trim();
+  const startDate = String(formData.get("start_date") ?? "").trim();
+  const endDate = String(formData.get("end_date") ?? "").trim() || startDate;
+  const registrationEnd = String(formData.get("registration_end") ?? "").trim();
+  const countsForCem = formData.get("counts_for_cem") === "on";
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!name || !startDate) {
@@ -228,28 +284,27 @@ export async function createCompetition(
     return { error: "A data de fim não pode ser antes da data de início." };
   }
 
-  if (registrationStart && registrationEnd && registrationStart > registrationEnd) {
-    return { error: "A data de início de inscrições não pode ser depois da data de fim." };
-  }
-
   const supabase = createClient();
-  const payload: Database["public"]["Tables"]["competitions"]["Insert"] = {
+  const payload: Database["public"]["Tables"]["competitions"]["Update"] = {
     name,
     location: location || null,
     start_date: startDate,
     end_date: endDate,
-    registration_start: registrationStart || null,
     registration_end: registrationEnd || null,
-    published: false,
+    counts_for_cem: countsForCem,
     notes: notes || null,
   };
-  // postgrest-js's insert() generic fails to resolve against our hand-written
-  // Database type; the payload above is already checked against Insert.
-  const { error } = await supabase.from("competitions").insert(payload as never);
+  const { error } = await supabase
+    .from("competitions")
+    .update(payload as never)
+    .eq("id", competitionId);
 
   if (error) return { error: error.message };
 
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
   revalidatePath("/backoffice/competitions");
+  revalidatePath("/backoffice");
+  revalidatePath("/dashboard/provas");
   return { success: true };
 }
 
