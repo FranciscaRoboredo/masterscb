@@ -107,10 +107,16 @@ export async function createCompetition(
   const name = String(formData.get("name") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
+  const registrationStart = String(formData.get("registration_start") ?? "").trim();
+  const registrationEnd = String(formData.get("registration_end") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!name || !date) {
     return { error: "Nome e data são obrigatórios." };
+  }
+
+  if (registrationStart && registrationEnd && registrationStart > registrationEnd) {
+    return { error: "A data de início de inscrições não pode ser depois da data de fim." };
   }
 
   const supabase = createClient();
@@ -118,6 +124,8 @@ export async function createCompetition(
     name,
     location: location || null,
     date,
+    registration_start: registrationStart || null,
+    registration_end: registrationEnd || null,
     notes: notes || null,
   };
   // postgrest-js's insert() generic fails to resolve against our hand-written
@@ -189,6 +197,66 @@ export async function addResult(
 
   revalidatePath(`/backoffice/competitions/${competitionId}`);
   return { success: true };
+}
+
+export async function addCatalogEvents(
+  competitionId: string,
+  _prevState: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  await requireCoach();
+
+  const names = formData.getAll("event_names").map(String);
+  if (names.length === 0) {
+    return { error: "Escolhe pelo menos uma prova." };
+  }
+
+  const supabase = createClient();
+  const existing = await listEvents(competitionId);
+  const existingNames = new Set(existing.map((e) => e.name));
+  const toInsert = names.filter((n) => !existingNames.has(n));
+
+  if (toInsert.length === 0) {
+    return { error: "Essas provas já estão adicionadas." };
+  }
+
+  const payload: Database["public"]["Tables"]["competition_events"]["Insert"][] = toInsert.map(
+    (name) => ({ competition_id: competitionId, name })
+  );
+  const { error } = await supabase.from("competition_events").insert(payload as never);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  return { success: true };
+}
+
+export type RelayResponseWithAthlete = {
+  athlete: Profile;
+  wantsRelay: boolean;
+};
+
+export async function listRelayResponses(competitionId: string): Promise<RelayResponseWithAthlete[]> {
+  const supabase = createClient();
+  type RelayResponse = Database["public"]["Tables"]["competition_relay_responses"]["Row"];
+
+  const [{ data: responses }, athletes] = await Promise.all([
+    supabase
+      .from("competition_relay_responses")
+      .select("*")
+      .eq("competition_id", competitionId)
+      .returns<RelayResponse[]>(),
+    listAllAthletes(),
+  ]);
+
+  const athleteById = new Map(athletes.map((a) => [a.id, a]));
+
+  return (responses ?? [])
+    .map((r) => {
+      const athlete = athleteById.get(r.athlete_id);
+      return athlete ? { athlete, wantsRelay: r.wants_relay } : null;
+    })
+    .filter((r): r is RelayResponseWithAthlete => Boolean(r));
 }
 
 export async function listAllAthletes(): Promise<Profile[]> {

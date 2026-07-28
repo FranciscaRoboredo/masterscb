@@ -3,9 +3,11 @@ import {
   getCompetition,
   listEventsWithDetails,
   listAllAthletes,
+  listRelayResponses,
 } from "../actions";
 import { NewEventForm } from "./new-event-form";
 import { AddResultForm } from "./add-result-form";
+import { CatalogEventsForm } from "./catalog-events-form";
 
 export default async function CompetitionDetailPage({
   params,
@@ -15,9 +17,10 @@ export default async function CompetitionDetailPage({
   const competition = await getCompetition(params.id);
   if (!competition) notFound();
 
-  const [events, athletes] = await Promise.all([
+  const [events, athletes, relayResponses] = await Promise.all([
     listEventsWithDetails(params.id),
     listAllAthletes(),
+    listRelayResponses(params.id),
   ]);
 
   return (
@@ -27,9 +30,29 @@ export default async function CompetitionDetailPage({
         {new Date(`${competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
         {competition.location ? ` · ${competition.location}` : ""}
       </p>
+      <p className="mt-1 text-sm text-neutral-500">
+        Inscrições:{" "}
+        {competition.registration_start
+          ? new Date(`${competition.registration_start}T00:00:00`).toLocaleDateString("pt-PT")
+          : "sem data de início"}{" "}
+        até{" "}
+        {competition.registration_end
+          ? new Date(`${competition.registration_end}T00:00:00`).toLocaleDateString("pt-PT")
+          : "sem data de fim"}
+      </p>
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-semibold text-neutral-900">Adicionar prova</h2>
+        <h2 className="text-sm font-semibold text-neutral-900">Adicionar provas do catálogo</h2>
+        <div className="mt-3">
+          <CatalogEventsForm
+            competitionId={competition.id}
+            existingNames={events.map((e) => e.name)}
+          />
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">Adicionar prova personalizada</h2>
         <div className="mt-3">
           <NewEventForm competitionId={competition.id} />
         </div>
@@ -89,6 +112,26 @@ export default async function CompetitionDetailPage({
             </div>
           </div>
         ))}
+      </section>
+
+      <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">
+          Estafetas ({relayResponses.length} respostas)
+        </h2>
+        {relayResponses.length === 0 ? (
+          <p className="mt-1 text-sm text-neutral-400">Ainda ninguém respondeu.</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-neutral-100 text-sm">
+            {relayResponses.map((r) => (
+              <li key={r.athlete.id} className="flex items-center justify-between py-1.5">
+                <span className="text-neutral-700">{r.athlete.full_name || r.athlete.email}</span>
+                <span className={r.wantsRelay ? "text-green-700" : "text-neutral-400"}>
+                  {r.wantsRelay ? "Sim" : "Não"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );

@@ -66,6 +66,28 @@ export function NewCompetitionForm() {
         />
       </div>
       <div>
+        <label htmlFor="registration_start" className="block text-sm font-medium text-neutral-700">
+          Início das inscrições
+        </label>
+        <input
+          id="registration_start"
+          name="registration_start"
+          type="date"
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+      </div>
+      <div>
+        <label htmlFor="registration_end" className="block text-sm font-medium text-neutral-700">
+          Fim das inscrições
+        </label>
+        <input
+          id="registration_end"
+          name="registration_end"
+          type="date"
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+      </div>
+      <div className="sm:col-span-2">
         <label htmlFor="notes" className="block text-sm font-medium text-neutral-700">
           Notas
         </label>

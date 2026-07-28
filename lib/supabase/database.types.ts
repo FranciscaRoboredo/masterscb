@@ -41,6 +41,8 @@ export interface Database {
           name: string;
           location: string | null;
           date: string;
+          registration_start: string | null;
+          registration_end: string | null;
           notes: string | null;
           created_at: string;
         };
@@ -48,12 +50,16 @@ export interface Database {
           name: string;
           location?: string | null;
           date: string;
+          registration_start?: string | null;
+          registration_end?: string | null;
           notes?: string | null;
         };
         Update: {
           name?: string;
           location?: string | null;
           date?: string;
+          registration_start?: string | null;
+          registration_end?: string | null;
           notes?: string | null;
         };
         Relationships: [];
@@ -112,6 +118,24 @@ export interface Database {
           time?: string | null;
           position?: number | null;
           notes?: string | null;
+        };
+        Relationships: [];
+      };
+      competition_relay_responses: {
+        Row: {
+          id: string;
+          athlete_id: string;
+          competition_id: string;
+          wants_relay: boolean;
+          created_at: string;
+        };
+        Insert: {
+          athlete_id: string;
+          competition_id: string;
+          wants_relay: boolean;
+        };
+        Update: {
+          wants_relay?: boolean;
         };
         Relationships: [];
       };
