@@ -305,6 +305,51 @@ export async function createEvent(
   return { success: true };
 }
 
+export async function updateEvent(
+  eventId: string,
+  competitionId: string,
+  _prevState: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  await requireCoach();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const eventDate = String(formData.get("event_date") ?? "").trim();
+  const eventTime = String(formData.get("event_time") ?? "").trim();
+
+  if (!name || !eventDate) {
+    return { error: "O nome e a data da prova são obrigatórios." };
+  }
+
+  const supabase = createClient();
+  const payload: Database["public"]["Tables"]["competition_events"]["Update"] = {
+    name,
+    event_date: eventDate,
+    event_time: eventTime || null,
+  };
+  const { error } = await supabase
+    .from("competition_events")
+    .update(payload as never)
+    .eq("id", eventId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  return { success: true };
+}
+
+export async function deleteEvent(eventId: string, competitionId: string): Promise<ActionResult> {
+  await requireCoach();
+
+  const supabase = createClient();
+  const { error } = await supabase.from("competition_events").delete().eq("id", eventId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  return { success: true };
+}
+
 export async function addResult(
   eventId: string,
   competitionId: string,

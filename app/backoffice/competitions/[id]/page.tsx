@@ -9,6 +9,7 @@ import {
 import { NewEventForm } from "./new-event-form";
 import { CatalogEventsForm } from "./catalog-events-form";
 import { PublishToggle } from "./publish-toggle";
+import { EventItem } from "./event-item";
 
 function formatDate(date: string) {
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-PT", {
@@ -111,24 +112,13 @@ export default async function CompetitionDetailPage({
         )}
 
         {events.map((event) => (
-          <div key={event.id} className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium text-neutral-900">{event.name}</h3>
-              <span className="text-sm text-neutral-500">
-                {formatDate(event.event_date)}
-                {event.event_time && ` · ${event.event_time.slice(0, 5)}`}
-              </span>
-            </div>
-
-            <p className="mt-2 text-xs uppercase tracking-wide text-neutral-400">
-              Inscritas ({event.registeredAthletes.length})
-            </p>
-            <p className="mt-1 text-sm text-neutral-700">
-              {event.registeredAthletes.length > 0
-                ? event.registeredAthletes.map((a) => a.full_name || a.email).join(", ")
-                : "Ninguém inscrito ainda."}
-            </p>
-          </div>
+          <EventItem
+            key={event.id}
+            event={event}
+            competitionId={competition.id}
+            startDate={competition.start_date}
+            endDate={competition.end_date}
+          />
         ))}
       </section>
 
