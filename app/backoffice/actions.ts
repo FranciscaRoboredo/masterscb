@@ -76,3 +76,79 @@ export async function listAthletes(): Promise<Profile[]> {
   if (error) return [];
   return data;
 }
+
+export async function getAthlete(id: string): Promise<Profile | null> {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "coach") return null;
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", id)
+    .eq("role", "athlete")
+    .maybeSingle<Profile>();
+
+  return data;
+}
+
+export type UpdateAthleteResult = { error: string } | { success: true };
+
+export async function updateAthlete(
+  athleteId: string,
+  _prevState: UpdateAthleteResult | null,
+  formData: FormData
+): Promise<UpdateAthleteResult> {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "coach") {
+    return { error: "Sem permissão." };
+  }
+
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const birthDate = String(formData.get("birth_date") ?? "").trim();
+  const club = String(formData.get("club") ?? "").trim();
+  const federationNumber = String(formData.get("federation_number") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  if (!fullName) {
+    return { error: "O nome é obrigatório." };
+  }
+
+  const supabase = createClient();
+  const payload: Database["public"]["Tables"]["profiles"]["Update"] = {
+    full_name: fullName,
+    phone: phone || null,
+    birth_date: birthDate || null,
+    club: club || null,
+    federation_number: federationNumber || null,
+    notes: notes || null,
+  };
+  const { error } = await supabase
+    .from("profiles")
+    .update(payload as never)
+    .eq("id", athleteId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/backoffice");
+  revalidatePath(`/backoffice/athletes/${athleteId}`);
+  return { success: true };
+}
+
+export type DeleteAthleteResult = { error: string } | { success: true };
+
+export async function deleteAthlete(athleteId: string): Promise<DeleteAthleteResult> {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "coach") {
+    return { error: "Sem permissão." };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.from("profiles").delete().eq("id", athleteId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/backoffice");
+  return { success: true };
+}

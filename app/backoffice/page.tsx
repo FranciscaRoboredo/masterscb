@@ -110,8 +110,12 @@ export default async function BackofficePage() {
                 </tr>
               )}
               {athletes.map((athlete) => (
-                <tr key={athlete.id}>
-                  <Td>{athlete.full_name || "—"}</Td>
+                <tr key={athlete.id} className="hover:bg-neutral-50">
+                  <Td>
+                    <Link href={`/backoffice/athletes/${athlete.id}`} className="hover:underline">
+                      {athlete.full_name || "—"}
+                    </Link>
+                  </Td>
                   <Td>{athlete.email}</Td>
                   <Td>{athlete.phone || "—"}</Td>
                   <Td>{athlete.club || "—"}</Td>
