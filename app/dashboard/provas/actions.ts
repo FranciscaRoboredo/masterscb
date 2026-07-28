@@ -21,6 +21,7 @@ function todayISO() {
 }
 
 function isRegistrationOpen(competition: Competition, today: string) {
+  if (!competition.published) return false;
   if (competition.registration_start && today < competition.registration_start) return false;
   if (competition.registration_end && today > competition.registration_end) return false;
   return true;

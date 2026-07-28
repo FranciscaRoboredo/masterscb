@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/get-profile";
 import { getTodaysTraining, getNextRace } from "@/lib/dashboard-data";
+import { listUpcomingCompetitionsCalendar } from "@/lib/competitions-calendar";
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile();
@@ -10,9 +11,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [training, nextRace] = await Promise.all([
+  const [training, nextRace, calendar] = await Promise.all([
     getTodaysTraining(),
     getNextRace(profile.id),
+    listUpcomingCompetitionsCalendar(),
   ]);
 
   return (
@@ -54,6 +56,31 @@ export default async function DashboardPage() {
         >
           Inscrever em provas
         </Link>
+
+        <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-semibold text-neutral-900">Próximas provas</h2>
+          {calendar.length === 0 ? (
+            <p className="mt-2 text-sm text-neutral-400">Ainda não há competições marcadas.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-neutral-100">
+              {calendar.map((c) => (
+                <li key={c.id} className="flex items-center justify-between py-2 text-sm">
+                  <span className="text-neutral-900">{c.name}</span>
+                  <span className="flex items-center gap-2 text-neutral-500">
+                    {new Date(`${c.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                    {c.end_date !== c.start_date &&
+                      ` – ${new Date(`${c.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
+                    {!c.published && (
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+                        Inscrições brevemente
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
     </main>
   );
 }

@@ -2,9 +2,16 @@ import { listUpcomingCompetitions } from "./actions";
 import { RegisterButton } from "./register-button";
 import { RelayQuestion } from "./relay-question";
 import { LocationLink } from "@/components/location-link";
+import { ConvocatoriaList } from "@/components/convocatoria-list";
+import { listConvocatorias } from "@/lib/convocatorias-actions";
 
 export default async function ProvasPage() {
   const competitions = await listUpcomingCompetitions();
+  const convocatoriasByCompetition = new Map(
+    await Promise.all(
+      competitions.map(async (c) => [c.id, await listConvocatorias(c.id)] as const)
+    )
+  );
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
@@ -20,6 +27,7 @@ export default async function ProvasPage() {
 
         {competitions.map((competition) => {
           const canRegister = competition.registrationOpen && competition.relayResponse !== null;
+          const convocatorias = convocatoriasByCompetition.get(competition.id) ?? [];
 
           return (
             <div key={competition.id} className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
@@ -44,7 +52,13 @@ export default async function ProvasPage() {
                 </p>
               )}
 
-              {!competition.registrationOpen && (
+              {!competition.published && (
+                <p className="mt-2 text-sm text-neutral-500">
+                  Ainda não está disponível para inscrição.
+                </p>
+              )}
+
+              {competition.published && !competition.registrationOpen && (
                 <p className="mt-2 text-sm text-red-600">
                   {competition.registration_start && new Date() < new Date(`${competition.registration_start}T00:00:00`)
                     ? `As inscrições abrem a ${new Date(`${competition.registration_start}T00:00:00`).toLocaleDateString("pt-PT")}.`
@@ -58,35 +72,46 @@ export default async function ProvasPage() {
                 </div>
               )}
 
-              <ul className="mt-3 divide-y divide-neutral-100">
-                {competition.events.length === 0 && (
-                  <li className="py-2 text-sm text-neutral-400">Ainda sem provas definidas.</li>
-                )}
-                {competition.events.map((event) => (
-                  <li key={event.id} className="flex items-center justify-between py-2">
-                    <span className="text-sm text-neutral-700">
-                      {event.name}
-                      {competition.end_date !== competition.start_date && (
-                        <span className="ml-2 text-neutral-400">
-                          {new Date(`${event.event_date}T00:00:00`).toLocaleDateString("pt-PT", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                          })}
-                        </span>
-                      )}
-                      {event.event_time && (
-                        <span className="ml-2 text-neutral-400">{event.event_time.slice(0, 5)}</span>
-                      )}
-                    </span>
-                    <RegisterButton
-                      eventId={event.id}
-                      registered={event.registered}
-                      disabled={!canRegister && !event.registered}
-                    />
-                  </li>
-                ))}
-              </ul>
+              {competition.published && (
+                <ul className="mt-3 divide-y divide-neutral-100">
+                  {competition.events.length === 0 && (
+                    <li className="py-2 text-sm text-neutral-400">Ainda sem provas definidas.</li>
+                  )}
+                  {competition.events.map((event) => (
+                    <li key={event.id} className="flex items-center justify-between py-2">
+                      <span className="text-sm text-neutral-700">
+                        {event.name}
+                        {competition.end_date !== competition.start_date && (
+                          <span className="ml-2 text-neutral-400">
+                            {new Date(`${event.event_date}T00:00:00`).toLocaleDateString("pt-PT", {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                        )}
+                        {event.event_time && (
+                          <span className="ml-2 text-neutral-400">{event.event_time.slice(0, 5)}</span>
+                        )}
+                      </span>
+                      <RegisterButton
+                        eventId={event.id}
+                        registered={event.registered}
+                        disabled={!canRegister && !event.registered}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {convocatorias.length > 0 && (
+                <div className="mt-4 border-t border-neutral-100 pt-3">
+                  <p className="text-xs uppercase tracking-wide text-neutral-400">Convocatória</p>
+                  <div className="mt-2">
+                    <ConvocatoriaList competitionId={competition.id} files={convocatorias} />
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

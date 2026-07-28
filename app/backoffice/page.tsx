@@ -2,11 +2,13 @@ import Link from "next/link";
 import { listAthletes } from "./actions";
 import { getNextCompetitionSummary } from "./competitions/actions";
 import { InviteAthleteForm } from "./invite-athlete-form";
+import { listUpcomingCompetitionsCalendar } from "@/lib/competitions-calendar";
 
 export default async function BackofficePage() {
-  const [athletes, nextCompetition] = await Promise.all([
+  const [athletes, nextCompetition, calendar] = await Promise.all([
     listAthletes(),
     getNextCompetitionSummary(),
+    listUpcomingCompetitionsCalendar(),
   ]);
 
   return (
@@ -73,6 +75,43 @@ export default async function BackofficePage() {
               </ul>
             )}
           </>
+        )}
+      </section>
+
+      <section className="mt-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">Próximas provas</h2>
+        <p className="mt-1 text-xs text-neutral-400">
+          Rascunhos ficam calendarizados aqui, mas só abrem inscrições quando publicares.
+        </p>
+        {calendar.length === 0 ? (
+          <p className="mt-2 text-sm text-neutral-400">Não há competições marcadas.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-neutral-100">
+            {calendar.map((c) => (
+              <li key={c.id} className="py-2">
+                <Link
+                  href={`/backoffice/competitions/${c.id}`}
+                  className="flex items-center justify-between text-sm hover:underline"
+                >
+                  <span className="text-neutral-900">{c.name}</span>
+                  <span className="flex items-center gap-2 text-neutral-500">
+                    {new Date(`${c.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                    {c.end_date !== c.start_date &&
+                      ` – ${new Date(`${c.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
+                    <span
+                      className={
+                        c.published
+                          ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+                          : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500"
+                      }
+                    >
+                      {c.published ? "Publicada" : "Rascunho"}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

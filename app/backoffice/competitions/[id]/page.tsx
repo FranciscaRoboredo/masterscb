@@ -12,6 +12,9 @@ import { PublishToggle } from "./publish-toggle";
 import { EventItem } from "./event-item";
 import { EditCompetitionForm } from "./edit-competition-form";
 import { LocationLink } from "@/components/location-link";
+import { ConvocatoriaUploadForm } from "@/components/convocatoria-upload-form";
+import { ConvocatoriaList } from "@/components/convocatoria-list";
+import { listConvocatorias } from "@/lib/convocatorias-actions";
 
 function formatDate(date: string) {
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-PT", {
@@ -29,10 +32,11 @@ export default async function CompetitionDetailPage({
   const competition = await getCompetition(params.id);
   if (!competition) notFound();
 
-  const [events, relayResponses, registrationsByDay] = await Promise.all([
+  const [events, relayResponses, registrationsByDay, convocatorias] = await Promise.all([
     listEventsWithDetails(params.id),
     listRelayResponses(params.id),
     getRegistrationsByDay(params.id),
+    listConvocatorias(params.id),
   ]);
 
   return (
@@ -163,6 +167,19 @@ export default async function CompetitionDetailPage({
             ))}
           </div>
         )}
+      </section>
+
+      <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">Convocatória</h2>
+        <p className="mt-1 text-xs text-neutral-400">
+          PDFs disponíveis para as atletas descarregarem.
+        </p>
+        <div className="mt-3">
+          <ConvocatoriaUploadForm competitionId={competition.id} />
+        </div>
+        <div className="mt-3">
+          <ConvocatoriaList competitionId={competition.id} files={convocatorias} canDelete />
+        </div>
       </section>
 
       <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
