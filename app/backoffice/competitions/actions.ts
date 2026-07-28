@@ -32,6 +32,51 @@ export async function listCompetitions(): Promise<Competition[]> {
   return data;
 }
 
+export type NextCompetitionSummary = {
+  competition: Competition;
+  totalRegisteredAthletes: number;
+  events: { id: string; name: string; count: number }[];
+};
+
+export async function getNextCompetitionSummary(): Promise<NextCompetitionSummary | null> {
+  const supabase = createClient();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: competitions } = await supabase
+    .from("competitions")
+    .select("*")
+    .gte("date", today)
+    .order("date", { ascending: true })
+    .limit(1)
+    .returns<Competition[]>();
+
+  const competition = competitions?.[0];
+  if (!competition) return null;
+
+  const events = await listEvents(competition.id);
+  if (events.length === 0) {
+    return { competition, totalRegisteredAthletes: 0, events: [] };
+  }
+
+  const eventIds = events.map((e) => e.id);
+  const { data: registrations } = await supabase
+    .from("registrations")
+    .select("*")
+    .in("competition_event_id", eventIds)
+    .returns<Registration[]>();
+
+  const countByEvent = new Map<string, number>();
+  (registrations ?? []).forEach((r) => {
+    countByEvent.set(r.competition_event_id, (countByEvent.get(r.competition_event_id) ?? 0) + 1);
+  });
+
+  return {
+    competition,
+    totalRegisteredAthletes: new Set((registrations ?? []).map((r) => r.athlete_id)).size,
+    events: events.map((e) => ({ id: e.id, name: e.name, count: countByEvent.get(e.id) ?? 0 })),
+  };
+}
+
 export async function getCompetition(id: string): Promise<Competition | null> {
   const supabase = createClient();
   const { data } = await supabase

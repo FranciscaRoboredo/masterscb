@@ -1,8 +1,13 @@
+import Link from "next/link";
 import { listAthletes } from "./actions";
+import { getNextCompetitionSummary } from "./competitions/actions";
 import { InviteAthleteForm } from "./invite-athlete-form";
 
 export default async function BackofficePage() {
-  const athletes = await listAthletes();
+  const [athletes, nextCompetition] = await Promise.all([
+    listAthletes(),
+    getNextCompetitionSummary(),
+  ]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
@@ -11,6 +16,48 @@ export default async function BackofficePage() {
         Adiciona atletas manualmente. É criada uma conta e enviado um email
         com um link de acesso — sem registo aberto.
       </p>
+
+      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-neutral-900">Próxima competição</h2>
+          {nextCompetition && (
+            <Link
+              href={`/backoffice/competitions/${nextCompetition.competition.id}`}
+              className="text-sm text-neutral-500 hover:text-neutral-900"
+            >
+              Ver competição →
+            </Link>
+          )}
+        </div>
+
+        {!nextCompetition ? (
+          <p className="mt-2 text-sm text-neutral-400">Não há competições marcadas.</p>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-neutral-700">
+              <span className="font-medium">{nextCompetition.competition.name}</span> ·{" "}
+              {new Date(`${nextCompetition.competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-neutral-900">
+              {nextCompetition.totalRegisteredAthletes}
+              <span className="ml-1 text-sm font-normal text-neutral-500">
+                atleta{nextCompetition.totalRegisteredAthletes === 1 ? "" : "s"} inscrita
+                {nextCompetition.totalRegisteredAthletes === 1 ? "" : "s"}
+              </span>
+            </p>
+            {nextCompetition.events.length > 0 && (
+              <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+                {nextCompetition.events.map((event) => (
+                  <li key={event.id} className="flex justify-between text-neutral-600">
+                    <span>{event.name}</span>
+                    <span className="font-medium text-neutral-900">{event.count}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </section>
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-neutral-900">
