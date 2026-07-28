@@ -18,6 +18,7 @@ export async function updateProfile(
   const phone = String(formData.get("phone") ?? "").trim();
   const birthDate = String(formData.get("birth_date") ?? "").trim();
   const club = String(formData.get("club") ?? "").trim();
+  const federationNumber = String(formData.get("federation_number") ?? "").trim();
 
   if (!fullName) {
     return { error: "O nome é obrigatório." };
@@ -29,6 +30,7 @@ export async function updateProfile(
     phone: phone || null,
     birth_date: birthDate || null,
     club: club || null,
+    federation_number: federationNumber || null,
   };
   const { error } = await supabase
     .from("profiles")

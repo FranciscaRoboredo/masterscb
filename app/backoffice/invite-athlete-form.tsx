@@ -39,6 +39,7 @@ export function InviteAthleteForm() {
       <Field label="Telefone" name="phone" />
       <Field label="Data de nascimento" name="birth_date" type="date" />
       <Field label="Clube" name="club" />
+      <Field label="Número de federado" name="federation_number" />
       <Field label="Notas" name="notes" className="sm:col-span-2" />
 
       <div className="sm:col-span-2 flex items-center gap-3">

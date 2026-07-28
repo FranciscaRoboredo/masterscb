@@ -12,6 +12,7 @@ export interface Database {
           phone: string | null;
           birth_date: string | null;
           club: string | null;
+          federation_number: string | null;
           notes: string | null;
           created_at: string;
         };
@@ -23,6 +24,7 @@ export interface Database {
           phone?: string | null;
           birth_date?: string | null;
           club?: string | null;
+          federation_number?: string | null;
           notes?: string | null;
         };
         Update: {
@@ -31,6 +33,7 @@ export interface Database {
           phone?: string | null;
           birth_date?: string | null;
           club?: string | null;
+          federation_number?: string | null;
           notes?: string | null;
         };
         Relationships: [];

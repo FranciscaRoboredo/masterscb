@@ -25,6 +25,7 @@ export async function inviteAthlete(
   const phone = String(formData.get("phone") ?? "").trim();
   const birthDate = String(formData.get("birth_date") ?? "").trim();
   const club = String(formData.get("club") ?? "").trim();
+  const federationNumber = String(formData.get("federation_number") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!email || !fullName) {
@@ -49,6 +50,7 @@ export async function inviteAthlete(
         phone: phone || null,
         birth_date: birthDate || null,
         club: club || null,
+        federation_number: federationNumber || null,
         notes: notes || null,
       },
     },

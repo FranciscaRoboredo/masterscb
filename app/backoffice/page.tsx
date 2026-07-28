@@ -80,13 +80,14 @@ export default async function BackofficePage() {
                 <Th>Email</Th>
                 <Th>Telefone</Th>
                 <Th>Clube</Th>
+                <Th>Nº Federado</Th>
                 <Th>Adicionada em</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {athletes.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-neutral-400">
+                  <td colSpan={6} className="px-4 py-6 text-center text-neutral-400">
                     Ainda não há atletas.
                   </td>
                 </tr>
@@ -97,6 +98,7 @@ export default async function BackofficePage() {
                   <Td>{athlete.email}</Td>
                   <Td>{athlete.phone || "—"}</Td>
                   <Td>{athlete.club || "—"}</Td>
+                  <Td>{athlete.federation_number || "—"}</Td>
                   <Td>{new Date(athlete.created_at).toLocaleDateString("pt-PT")}</Td>
                 </tr>
               ))}
