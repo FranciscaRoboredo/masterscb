@@ -33,6 +33,9 @@ export function AppHeader({
               </Link>
             </>
           )}
+          <Link href="/profile" className="text-neutral-500 hover:text-neutral-900">
+            Perfil
+          </Link>
         </nav>
         <div className="flex items-center gap-3 text-sm text-neutral-600">
           <span>{fullName}</span>
