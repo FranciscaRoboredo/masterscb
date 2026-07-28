@@ -25,7 +25,9 @@ export default async function ProvasPage() {
               <div className="flex items-center justify-between">
                 <h2 className="font-medium text-neutral-900">{competition.name}</h2>
                 <span className="text-sm text-neutral-500">
-                  {new Date(`${competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+                  {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                  {competition.end_date !== competition.start_date &&
+                    ` – ${new Date(`${competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
                 </span>
               </div>
               {competition.location && (
@@ -54,6 +56,15 @@ export default async function ProvasPage() {
                   <li key={event.id} className="flex items-center justify-between py-2">
                     <span className="text-sm text-neutral-700">
                       {event.name}
+                      {competition.end_date !== competition.start_date && (
+                        <span className="ml-2 text-neutral-400">
+                          {new Date(`${event.event_date}T00:00:00`).toLocaleDateString("pt-PT", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </span>
+                      )}
                       {event.event_time && (
                         <span className="ml-2 text-neutral-400">{event.event_time.slice(0, 5)}</span>
                       )}

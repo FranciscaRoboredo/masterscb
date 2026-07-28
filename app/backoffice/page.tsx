@@ -36,7 +36,10 @@ export default async function BackofficePage() {
           <>
             <p className="mt-1 text-sm text-neutral-700">
               <span className="font-medium">{nextCompetition.competition.name}</span> ·{" "}
-              {new Date(`${nextCompetition.competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+              {new Date(`${nextCompetition.competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+              {nextCompetition.competition.end_date !== nextCompetition.competition.start_date &&
+                ` – ${new Date(`${nextCompetition.competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
+              {!nextCompetition.competition.published && " · rascunho"}
             </p>
             <p className="mt-2 text-2xl font-semibold text-neutral-900">
               {nextCompetition.totalRegisteredAthletes}
@@ -45,6 +48,20 @@ export default async function BackofficePage() {
                 {nextCompetition.totalRegisteredAthletes === 1 ? "" : "s"}
               </span>
             </p>
+            {nextCompetition.byDay.length > 1 && (
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {nextCompetition.byDay.map((day) => (
+                  <li key={day.date} className="text-neutral-600">
+                    {new Date(`${day.date}T00:00:00`).toLocaleDateString("pt-PT", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    })}
+                    : <span className="font-medium text-neutral-900">{day.count}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
             {nextCompetition.events.length > 0 && (
               <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
                 {nextCompetition.events.map((event) => (

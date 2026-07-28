@@ -26,7 +26,9 @@ export default async function CompetitionResultsPage({
       </Link>
       <h1 className="mt-2 text-2xl font-semibold text-neutral-900">Resultados</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        {new Date(`${competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+        {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+        {competition.end_date !== competition.start_date &&
+          ` – ${new Date(`${competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
         {competition.location ? ` · ${competition.location}` : ""}
       </p>
 
@@ -37,7 +39,12 @@ export default async function CompetitionResultsPage({
 
         {events.map((event) => (
           <div key={event.id} className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-            <h3 className="font-medium text-neutral-900">{event.name}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-neutral-900">{event.name}</h3>
+              <span className="text-sm text-neutral-500">
+                {new Date(`${event.event_date}T00:00:00`).toLocaleDateString("pt-PT")}
+              </span>
+            </div>
 
             {event.results.length > 0 ? (
               <table className="mt-3 w-full text-sm">

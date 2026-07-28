@@ -4,9 +4,19 @@ import {
   getCompetition,
   listEventsWithDetails,
   listRelayResponses,
+  getRegistrationsByDay,
 } from "../actions";
 import { NewEventForm } from "./new-event-form";
 import { CatalogEventsForm } from "./catalog-events-form";
+import { PublishToggle } from "./publish-toggle";
+
+function formatDate(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-PT", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
 
 export default async function CompetitionDetailPage({
   params,
@@ -16,18 +26,32 @@ export default async function CompetitionDetailPage({
   const competition = await getCompetition(params.id);
   if (!competition) notFound();
 
-  const [events, relayResponses] = await Promise.all([
+  const [events, relayResponses, registrationsByDay] = await Promise.all([
     listEventsWithDetails(params.id),
     listRelayResponses(params.id),
+    getRegistrationsByDay(params.id),
   ]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">{competition.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-neutral-900">{competition.name}</h1>
+            <span
+              className={
+                competition.published
+                  ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+                  : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500"
+              }
+            >
+              {competition.published ? "Publicada" : "Rascunho"}
+            </span>
+          </div>
           <p className="mt-1 text-sm text-neutral-500">
-            {new Date(`${competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+            {new Date(`${competition.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+            {competition.end_date !== competition.start_date &&
+              ` – ${new Date(`${competition.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
             {competition.location ? ` · ${competition.location}` : ""}
           </p>
           <p className="mt-1 text-sm text-neutral-500">
@@ -41,20 +65,31 @@ export default async function CompetitionDetailPage({
               : "sem data de fim"}
           </p>
         </div>
-        <Link
-          href={`/backoffice/competitions/${competition.id}/resultados`}
-          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100"
-        >
-          Gerir resultados →
-        </Link>
+        <div className="flex flex-col items-end gap-2">
+          <PublishToggle competitionId={competition.id} published={competition.published} />
+          <Link
+            href={`/backoffice/competitions/${competition.id}/resultados`}
+            className="text-sm text-neutral-500 hover:text-neutral-900"
+          >
+            Gerir resultados →
+          </Link>
+        </div>
       </div>
+
+      {!competition.published && (
+        <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Esta competição ainda é um rascunho — as atletas não a veem. Adiciona as provas e
+          publica quando estiver pronta.
+        </p>
+      )}
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-neutral-900">Adicionar provas do catálogo</h2>
         <div className="mt-3">
           <CatalogEventsForm
             competitionId={competition.id}
-            existingNames={events.map((e) => e.name)}
+            startDate={competition.start_date}
+            endDate={competition.end_date}
           />
         </div>
       </section>
@@ -62,7 +97,11 @@ export default async function CompetitionDetailPage({
       <section className="mt-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-neutral-900">Adicionar prova personalizada</h2>
         <div className="mt-3">
-          <NewEventForm competitionId={competition.id} />
+          <NewEventForm
+            competitionId={competition.id}
+            startDate={competition.start_date}
+            endDate={competition.end_date}
+          />
         </div>
       </section>
 
@@ -75,9 +114,10 @@ export default async function CompetitionDetailPage({
           <div key={event.id} className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-neutral-900">{event.name}</h3>
-              {event.event_time && (
-                <span className="text-sm text-neutral-500">{event.event_time.slice(0, 5)}</span>
-              )}
+              <span className="text-sm text-neutral-500">
+                {formatDate(event.event_date)}
+                {event.event_time && ` · ${event.event_time.slice(0, 5)}`}
+              </span>
             </div>
 
             <p className="mt-2 text-xs uppercase tracking-wide text-neutral-400">
@@ -90,6 +130,34 @@ export default async function CompetitionDetailPage({
             </p>
           </div>
         ))}
+      </section>
+
+      <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-neutral-900">Inscrições por dia</h2>
+        <p className="mt-1 text-xs text-neutral-400">
+          Útil para competições de vários dias — nem todas vão a todos os dias.
+        </p>
+        {registrationsByDay.length === 0 ? (
+          <p className="mt-2 text-sm text-neutral-400">Ainda sem inscrições.</p>
+        ) : (
+          <div className="mt-3 space-y-4">
+            {registrationsByDay.map((day) => (
+              <div key={day.date}>
+                <p className="text-sm font-medium text-neutral-900">
+                  {formatDate(day.date)} · {day.athleteCount} atleta
+                  {day.athleteCount === 1 ? "" : "s"}
+                </p>
+                <ul className="mt-1 space-y-0.5 text-sm text-neutral-600">
+                  {day.athletes.map(({ athlete, eventNames }) => (
+                    <li key={athlete.id}>
+                      {athlete.full_name || athlete.email} — {eventNames.join(", ")}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">

@@ -28,6 +28,7 @@ export async function getTodaysTraining(): Promise<DailyTraining | null> {
 
 export async function getNextRace(athleteId: string): Promise<NextRace | null> {
   const supabase = createClient();
+  const today = todayISO();
 
   const { data: registrations } = await supabase
     .from("registrations")
@@ -43,25 +44,20 @@ export async function getNextRace(athleteId: string): Promise<NextRace | null> {
     .from("competition_events")
     .select("*")
     .in("id", eventIds)
+    .gte("event_date", today)
+    .order("event_date", { ascending: true })
     .returns<CompetitionEvent[]>();
 
-  if (!events || events.length === 0) return null;
+  const nextEvent = events?.[0];
+  if (!nextEvent) return null;
 
-  const competitionIds = [...new Set(events.map((e) => e.competition_id))];
-
-  const { data: competitions } = await supabase
+  const { data: competition } = await supabase
     .from("competitions")
     .select("*")
-    .in("id", competitionIds)
-    .gte("date", todayISO())
-    .order("date", { ascending: true })
-    .returns<Competition[]>();
+    .eq("id", nextEvent.competition_id)
+    .maybeSingle<Competition>();
 
-  if (!competitions || competitions.length === 0) return null;
+  if (!competition) return null;
 
-  const nextCompetition = competitions[0];
-  const event = events.find((e) => e.competition_id === nextCompetition.id);
-  if (!event) return null;
-
-  return { competition: nextCompetition, event };
+  return { competition, event: nextEvent };
 }

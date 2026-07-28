@@ -21,39 +21,41 @@ function SubmitButton() {
 
 export function CatalogEventsForm({
   competitionId,
-  existingNames,
+  startDate,
+  endDate,
 }: {
   competitionId: string;
-  existingNames: string[];
+  startDate: string;
+  endDate: string;
 }) {
   const boundAction = addCatalogEvents.bind(null, competitionId);
   const [state, formAction] = useFormState(boundAction, initialState);
-  const existing = new Set(existingNames);
 
   return (
     <form action={formAction}>
+      <div className="mb-3">
+        <label htmlFor="event_date" className="block text-xs font-medium text-neutral-700">
+          Dia em que estas provas acontecem
+        </label>
+        <input
+          id="event_date"
+          name="event_date"
+          type="date"
+          required
+          min={startDate}
+          max={endDate}
+          defaultValue={startDate}
+          className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-        {SWIM_EVENTS.map((name) => {
-          const alreadyAdded = existing.has(name);
-          return (
-            <label
-              key={name}
-              className={`flex items-center gap-2 text-sm ${
-                alreadyAdded ? "text-neutral-300" : "text-neutral-700"
-              }`}
-            >
-              <input
-                type="checkbox"
-                name="event_names"
-                value={name}
-                disabled={alreadyAdded}
-                className="rounded border-neutral-300"
-              />
-              {name}
-              {alreadyAdded && " (já adicionada)"}
-            </label>
-          );
-        })}
+        {SWIM_EVENTS.map((name) => (
+          <label key={name} className="flex items-center gap-2 text-sm text-neutral-700">
+            <input type="checkbox" name="event_names" value={name} className="rounded border-neutral-300" />
+            {name}
+          </label>
+        ))}
       </div>
 
       <div className="mt-3 flex items-center gap-3">

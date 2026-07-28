@@ -9,6 +9,7 @@ type Competition = Database["public"]["Tables"]["competitions"]["Row"];
 type CompetitionEvent = Database["public"]["Tables"]["competition_events"]["Row"];
 type Result = Database["public"]["Tables"]["results"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Registration = Database["public"]["Tables"]["registrations"]["Row"];
 
 export type ActionResult = { error: string } | { success: true };
 
@@ -25,7 +26,7 @@ export async function listCompetitions(): Promise<Competition[]> {
   const { data, error } = await supabase
     .from("competitions")
     .select("*")
-    .order("date", { ascending: false })
+    .order("start_date", { ascending: false })
     .returns<Competition[]>();
 
   if (error) return [];
@@ -36,6 +37,7 @@ export type NextCompetitionSummary = {
   competition: Competition;
   totalRegisteredAthletes: number;
   events: { id: string; name: string; count: number }[];
+  byDay: { date: string; count: number }[];
 };
 
 export async function getNextCompetitionSummary(): Promise<NextCompetitionSummary | null> {
@@ -45,8 +47,8 @@ export async function getNextCompetitionSummary(): Promise<NextCompetitionSummar
   const { data: competitions } = await supabase
     .from("competitions")
     .select("*")
-    .gte("date", today)
-    .order("date", { ascending: true })
+    .gte("end_date", today)
+    .order("start_date", { ascending: true })
     .limit(1)
     .returns<Competition[]>();
 
@@ -55,7 +57,7 @@ export async function getNextCompetitionSummary(): Promise<NextCompetitionSummar
 
   const events = await listEvents(competition.id);
   if (events.length === 0) {
-    return { competition, totalRegisteredAthletes: 0, events: [] };
+    return { competition, totalRegisteredAthletes: 0, events: [], byDay: [] };
   }
 
   const eventIds = events.map((e) => e.id);
@@ -65,15 +67,27 @@ export async function getNextCompetitionSummary(): Promise<NextCompetitionSummar
     .in("competition_event_id", eventIds)
     .returns<Registration[]>();
 
+  const eventById = new Map(events.map((e) => [e.id, e]));
   const countByEvent = new Map<string, number>();
+  const athletesByDay = new Map<string, Set<string>>();
+
   (registrations ?? []).forEach((r) => {
     countByEvent.set(r.competition_event_id, (countByEvent.get(r.competition_event_id) ?? 0) + 1);
+    const event = eventById.get(r.competition_event_id);
+    if (event) {
+      const set = athletesByDay.get(event.event_date) ?? new Set<string>();
+      set.add(r.athlete_id);
+      athletesByDay.set(event.event_date, set);
+    }
   });
 
   return {
     competition,
     totalRegisteredAthletes: new Set((registrations ?? []).map((r) => r.athlete_id)).size,
     events: events.map((e) => ({ id: e.id, name: e.name, count: countByEvent.get(e.id) ?? 0 })),
+    byDay: [...athletesByDay.entries()]
+      .map(([date, athletes]) => ({ date, count: athletes.size }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
   };
 }
 
@@ -94,6 +108,7 @@ export async function listEvents(competitionId: string): Promise<CompetitionEven
     .from("competition_events")
     .select("*")
     .eq("competition_id", competitionId)
+    .order("event_date", { ascending: true })
     .order("event_time", { ascending: true })
     .returns<CompetitionEvent[]>();
 
@@ -105,8 +120,6 @@ export type EventWithDetails = CompetitionEvent & {
   registeredAthletes: Profile[];
   results: (Result & { athlete: Profile | null })[];
 };
-
-type Registration = Database["public"]["Tables"]["registrations"]["Row"];
 
 export async function listEventsWithDetails(competitionId: string): Promise<EventWithDetails[]> {
   const supabase = createClient();
@@ -143,6 +156,56 @@ export async function listEventsWithDetails(competitionId: string): Promise<Even
   }));
 }
 
+export type DayRegistrationSummary = {
+  date: string;
+  athleteCount: number;
+  athletes: { athlete: Profile; eventNames: string[] }[];
+};
+
+export async function getRegistrationsByDay(competitionId: string): Promise<DayRegistrationSummary[]> {
+  const supabase = createClient();
+  const events = await listEvents(competitionId);
+  if (events.length === 0) return [];
+
+  const eventIds = events.map((e) => e.id);
+  const [{ data: registrations }, athletes] = await Promise.all([
+    supabase
+      .from("registrations")
+      .select("*")
+      .in("competition_event_id", eventIds)
+      .returns<Registration[]>(),
+    listAllAthletes(),
+  ]);
+
+  const athleteById = new Map(athletes.map((a) => [a.id, a]));
+  const eventById = new Map(events.map((e) => [e.id, e]));
+
+  const byDay = new Map<string, Map<string, string[]>>();
+
+  (registrations ?? []).forEach((r) => {
+    const event = eventById.get(r.competition_event_id);
+    if (!event) return;
+    const dayMap = byDay.get(event.event_date) ?? new Map<string, string[]>();
+    const eventNames = dayMap.get(r.athlete_id) ?? [];
+    eventNames.push(event.name);
+    dayMap.set(r.athlete_id, eventNames);
+    byDay.set(event.event_date, dayMap);
+  });
+
+  return [...byDay.entries()]
+    .map(([date, athleteMap]) => ({
+      date,
+      athleteCount: athleteMap.size,
+      athletes: [...athleteMap.entries()]
+        .map(([athleteId, eventNames]) => {
+          const athlete = athleteById.get(athleteId);
+          return athlete ? { athlete, eventNames } : null;
+        })
+        .filter((a): a is { athlete: Profile; eventNames: string[] } => Boolean(a)),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
 export async function createCompetition(
   _prevState: ActionResult | null,
   formData: FormData
@@ -151,13 +214,18 @@ export async function createCompetition(
 
   const name = String(formData.get("name") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
-  const date = String(formData.get("date") ?? "").trim();
+  const startDate = String(formData.get("start_date") ?? "").trim();
+  const endDate = String(formData.get("end_date") ?? "").trim() || startDate;
   const registrationStart = String(formData.get("registration_start") ?? "").trim();
   const registrationEnd = String(formData.get("registration_end") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (!name || !date) {
-    return { error: "Nome e data são obrigatórios." };
+  if (!name || !startDate) {
+    return { error: "Nome e data de início são obrigatórios." };
+  }
+
+  if (endDate < startDate) {
+    return { error: "A data de fim não pode ser antes da data de início." };
   }
 
   if (registrationStart && registrationEnd && registrationStart > registrationEnd) {
@@ -168,9 +236,11 @@ export async function createCompetition(
   const payload: Database["public"]["Tables"]["competitions"]["Insert"] = {
     name,
     location: location || null,
-    date,
+    start_date: startDate,
+    end_date: endDate,
     registration_start: registrationStart || null,
     registration_end: registrationEnd || null,
+    published: false,
     notes: notes || null,
   };
   // postgrest-js's insert() generic fails to resolve against our hand-written
@@ -183,6 +253,28 @@ export async function createCompetition(
   return { success: true };
 }
 
+export async function setPublished(
+  competitionId: string,
+  published: boolean
+): Promise<ActionResult> {
+  await requireCoach();
+
+  const supabase = createClient();
+  const payload: Database["public"]["Tables"]["competitions"]["Update"] = { published };
+  const { error } = await supabase
+    .from("competitions")
+    .update(payload as never)
+    .eq("id", competitionId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  revalidatePath("/backoffice/competitions");
+  revalidatePath("/backoffice");
+  revalidatePath("/dashboard/provas");
+  return { success: true };
+}
+
 export async function createEvent(
   competitionId: string,
   _prevState: ActionResult | null,
@@ -191,16 +283,18 @@ export async function createEvent(
   await requireCoach();
 
   const name = String(formData.get("name") ?? "").trim();
+  const eventDate = String(formData.get("event_date") ?? "").trim();
   const eventTime = String(formData.get("event_time") ?? "").trim();
 
-  if (!name) {
-    return { error: "O nome da prova é obrigatório." };
+  if (!name || !eventDate) {
+    return { error: "O nome e a data da prova são obrigatórios." };
   }
 
   const supabase = createClient();
   const payload: Database["public"]["Tables"]["competition_events"]["Insert"] = {
     competition_id: competitionId,
     name,
+    event_date: eventDate,
     event_time: eventTime || null,
   };
   const { error } = await supabase.from("competition_events").insert(payload as never);
@@ -240,7 +334,7 @@ export async function addResult(
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  revalidatePath(`/backoffice/competitions/${competitionId}/resultados`);
   return { success: true };
 }
 
@@ -251,22 +345,27 @@ export async function addCatalogEvents(
 ): Promise<ActionResult> {
   await requireCoach();
 
+  const eventDate = String(formData.get("event_date") ?? "").trim();
   const names = formData.getAll("event_names").map(String);
+
+  if (!eventDate) {
+    return { error: "Escolhe o dia em que estas provas acontecem." };
+  }
   if (names.length === 0) {
     return { error: "Escolhe pelo menos uma prova." };
   }
 
   const supabase = createClient();
   const existing = await listEvents(competitionId);
-  const existingNames = new Set(existing.map((e) => e.name));
-  const toInsert = names.filter((n) => !existingNames.has(n));
+  const existingKeys = new Set(existing.map((e) => `${e.name}__${e.event_date}`));
+  const toInsert = names.filter((n) => !existingKeys.has(`${n}__${eventDate}`));
 
   if (toInsert.length === 0) {
-    return { error: "Essas provas já estão adicionadas." };
+    return { error: "Essas provas já estão adicionadas nesse dia." };
   }
 
   const payload: Database["public"]["Tables"]["competition_events"]["Insert"][] = toInsert.map(
-    (name) => ({ competition_id: competitionId, name })
+    (name) => ({ competition_id: competitionId, name, event_date: eventDate })
   );
   const { error } = await supabase.from("competition_events").insert(payload as never);
 

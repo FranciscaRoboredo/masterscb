@@ -43,26 +43,32 @@ export interface Database {
           id: string;
           name: string;
           location: string | null;
-          date: string;
+          start_date: string;
+          end_date: string;
           registration_start: string | null;
           registration_end: string | null;
+          published: boolean;
           notes: string | null;
           created_at: string;
         };
         Insert: {
           name: string;
           location?: string | null;
-          date: string;
+          start_date: string;
+          end_date: string;
           registration_start?: string | null;
           registration_end?: string | null;
+          published?: boolean;
           notes?: string | null;
         };
         Update: {
           name?: string;
           location?: string | null;
-          date?: string;
+          start_date?: string;
+          end_date?: string;
           registration_start?: string | null;
           registration_end?: string | null;
+          published?: boolean;
           notes?: string | null;
         };
         Relationships: [];
@@ -72,16 +78,19 @@ export interface Database {
           id: string;
           competition_id: string;
           name: string;
+          event_date: string;
           event_time: string | null;
           created_at: string;
         };
         Insert: {
           competition_id: string;
           name: string;
+          event_date: string;
           event_time?: string | null;
         };
         Update: {
           name?: string;
+          event_date?: string;
           event_time?: string | null;
         };
         Relationships: [];

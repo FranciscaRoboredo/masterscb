@@ -19,7 +19,15 @@ function SubmitButton() {
   );
 }
 
-export function NewEventForm({ competitionId }: { competitionId: string }) {
+export function NewEventForm({
+  competitionId,
+  startDate,
+  endDate,
+}: {
+  competitionId: string;
+  startDate: string;
+  endDate: string;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const boundAction = createEvent.bind(null, competitionId);
   const [state, formAction] = useFormState(async (
@@ -41,6 +49,21 @@ export function NewEventForm({ competitionId }: { competitionId: string }) {
           id="name"
           name="name"
           required
+          className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+      </div>
+      <div>
+        <label htmlFor="event_date" className="block text-xs font-medium text-neutral-700">
+          Dia
+        </label>
+        <input
+          id="event_date"
+          name="event_date"
+          type="date"
+          required
+          min={startDate}
+          max={endDate}
+          defaultValue={startDate}
           className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
         />
       </div>

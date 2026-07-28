@@ -38,8 +38,8 @@ export async function listUpcomingCompetitions(): Promise<UpcomingCompetition[]>
       supabase
         .from("competitions")
         .select("*")
-        .gte("date", today)
-        .order("date", { ascending: true })
+        .gte("end_date", today)
+        .order("start_date", { ascending: true })
         .returns<Competition[]>(),
       supabase.from("competition_events").select("*").returns<CompetitionEvent[]>(),
       supabase

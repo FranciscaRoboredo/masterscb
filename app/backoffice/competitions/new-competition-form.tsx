@@ -44,18 +44,6 @@ export function NewCompetitionForm() {
         />
       </div>
       <div>
-        <label htmlFor="date" className="block text-sm font-medium text-neutral-700">
-          Data
-        </label>
-        <input
-          id="date"
-          name="date"
-          type="date"
-          required
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
-        />
-      </div>
-      <div>
         <label htmlFor="location" className="block text-sm font-medium text-neutral-700">
           Local
         </label>
@@ -64,6 +52,30 @@ export function NewCompetitionForm() {
           name="location"
           className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
         />
+      </div>
+      <div>
+        <label htmlFor="start_date" className="block text-sm font-medium text-neutral-700">
+          Data de início da competição
+        </label>
+        <input
+          id="start_date"
+          name="start_date"
+          type="date"
+          required
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+      </div>
+      <div>
+        <label htmlFor="end_date" className="block text-sm font-medium text-neutral-700">
+          Data de fim da competição
+        </label>
+        <input
+          id="end_date"
+          name="end_date"
+          type="date"
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+        />
+        <p className="mt-1 text-xs text-neutral-400">Deixa em branco se for só um dia.</p>
       </div>
       <div>
         <label htmlFor="registration_start" className="block text-sm font-medium text-neutral-700">
@@ -102,7 +114,9 @@ export function NewCompetitionForm() {
         <SubmitButton />
         {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
         {state && "success" in state && (
-          <p className="text-sm text-green-700">Competição criada.</p>
+          <p className="text-sm text-green-700">
+            Competição criada como rascunho. Adiciona as provas e depois publica-a.
+          </p>
         )}
       </div>
     </form>

@@ -32,10 +32,23 @@ export default async function CompetitionsPage() {
             <div className="flex items-center justify-between">
               <span className="font-medium text-neutral-900">{c.name}</span>
               <span className="text-sm text-neutral-500">
-                {new Date(`${c.date}T00:00:00`).toLocaleDateString("pt-PT")}
+                {new Date(`${c.start_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                {c.end_date !== c.start_date &&
+                  ` – ${new Date(`${c.end_date}T00:00:00`).toLocaleDateString("pt-PT")}`}
               </span>
             </div>
-            {c.location && <p className="mt-1 text-sm text-neutral-500">{c.location}</p>}
+            <div className="mt-1 flex items-center gap-2">
+              {c.location && <p className="text-sm text-neutral-500">{c.location}</p>}
+              <span
+                className={
+                  c.published
+                    ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+                    : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500"
+                }
+              >
+                {c.published ? "Publicada" : "Rascunho"}
+              </span>
+            </div>
           </Link>
         ))}
       </section>

@@ -33,7 +33,7 @@ export default async function DashboardPage() {
                 </span>
                 <span className="block">{nextRace.competition.name}</span>
                 <span className="block">
-                  {new Date(`${nextRace.competition.date}T00:00:00`).toLocaleDateString("pt-PT")}
+                  {new Date(`${nextRace.event.event_date}T00:00:00`).toLocaleDateString("pt-PT")}
                 </span>
               </>
             ) : (
