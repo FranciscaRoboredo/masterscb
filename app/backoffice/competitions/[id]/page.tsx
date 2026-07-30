@@ -112,6 +112,11 @@ export default async function CompetitionDetailPage({
             competitionId={competition.id}
             startDate={competition.start_date}
             endDate={competition.end_date}
+            existingEvents={events.map((e) => ({
+              name: e.name,
+              event_date: e.event_date,
+              session: e.session,
+            }))}
           />
         </div>
       </section>
