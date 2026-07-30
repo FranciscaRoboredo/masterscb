@@ -35,11 +35,15 @@ export function EventItem({
   competitionId,
   startDate,
   endDate,
+  selected = false,
+  onToggleSelect,
 }: {
   event: EventWithDetails;
   competitionId: string;
   startDate: string;
   endDate: string;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -122,7 +126,18 @@ export function EventItem({
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-neutral-900">{event.name}</h3>
+        <div className="flex items-center gap-3">
+          {onToggleSelect && (
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onToggleSelect}
+              className="rounded border-neutral-300"
+              aria-label={`Selecionar ${event.name}`}
+            />
+          )}
+          <h3 className="font-medium text-neutral-900">{event.name}</h3>
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-neutral-500">
             {formatDate(event.event_date)}

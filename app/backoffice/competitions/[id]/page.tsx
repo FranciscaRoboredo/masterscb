@@ -9,7 +9,7 @@ import {
 import { NewEventForm } from "./new-event-form";
 import { CatalogEventsForm } from "./catalog-events-form";
 import { PublishToggle } from "./publish-toggle";
-import { EventItem } from "./event-item";
+import { EventsList } from "./events-list";
 import { EditCompetitionForm } from "./edit-competition-form";
 import { DeleteCompetitionButton } from "./delete-competition-button";
 import { LocationLink } from "@/components/location-link";
@@ -132,20 +132,13 @@ export default async function CompetitionDetailPage({
         </div>
       </section>
 
-      <section className="mt-8 space-y-6">
-        {events.length === 0 && (
-          <p className="text-sm text-neutral-400">Ainda não há provas nesta competição.</p>
-        )}
-
-        {events.map((event) => (
-          <EventItem
-            key={event.id}
-            event={event}
-            competitionId={competition.id}
-            startDate={competition.start_date}
-            endDate={competition.end_date}
-          />
-        ))}
+      <section className="mt-8">
+        <EventsList
+          events={events}
+          competitionId={competition.id}
+          startDate={competition.start_date}
+          endDate={competition.end_date}
+        />
       </section>
 
       <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">

@@ -433,6 +433,20 @@ export async function deleteEvent(eventId: string, competitionId: string): Promi
   return { success: true };
 }
 
+export async function deleteEvents(eventIds: string[], competitionId: string): Promise<ActionResult> {
+  await requireCoach();
+
+  if (eventIds.length === 0) return { success: true };
+
+  const supabase = createClient();
+  const { error } = await supabase.from("competition_events").delete().in("id", eventIds);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/backoffice/competitions/${competitionId}`);
+  return { success: true };
+}
+
 export async function addResult(
   eventId: string,
   competitionId: string,
