@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { createEvent, type ActionResult } from "../actions";
+import { SessionSelect } from "@/components/session-select";
 
 const initialState: ActionResult | null = null;
 
@@ -78,6 +79,7 @@ export function NewEventForm({
           className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
         />
       </div>
+      <SessionSelect />
       <SubmitButton />
       {state && "error" in state && <p className="text-sm text-red-600">{state.error}</p>}
     </form>

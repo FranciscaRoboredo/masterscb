@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { updateEvent, deleteEvent, type ActionResult } from "../actions";
 import type { EventWithDetails } from "../actions";
+import { SessionSelect } from "@/components/session-select";
+import { SESSION_LABELS } from "@/lib/event-session";
 
 const initialState: ActionResult | null = null;
 
@@ -102,6 +104,7 @@ export function EventItem({
               className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
             />
           </div>
+          <SessionSelect defaultValue={event.session} id={`session-${event.id}`} />
           <SaveButton />
           <button
             type="button"
@@ -123,6 +126,7 @@ export function EventItem({
         <div className="flex items-center gap-3">
           <span className="text-sm text-neutral-500">
             {formatDate(event.event_date)}
+            {event.session && ` · ${SESSION_LABELS[event.session]}`}
             {event.event_time && ` · ${event.event_time.slice(0, 5)}`}
           </span>
           <button

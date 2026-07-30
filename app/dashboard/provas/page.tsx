@@ -4,6 +4,7 @@ import { RelayQuestion } from "./relay-question";
 import { LocationLink } from "@/components/location-link";
 import { ConvocatoriaList } from "@/components/convocatoria-list";
 import { listConvocatorias } from "@/lib/convocatorias-actions";
+import { SESSION_LABELS } from "@/lib/event-session";
 
 export default async function ProvasPage() {
   const competitions = await listUpcomingCompetitions();
@@ -89,6 +90,9 @@ export default async function ProvasPage() {
                               month: "short",
                             })}
                           </span>
+                        )}
+                        {event.session && (
+                          <span className="ml-2 text-neutral-400">{SESSION_LABELS[event.session]}</span>
                         )}
                         {event.event_time && (
                           <span className="ml-2 text-neutral-400">{event.event_time.slice(0, 5)}</span>

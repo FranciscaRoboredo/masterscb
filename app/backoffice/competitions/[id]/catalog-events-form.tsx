@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { addCatalogEvents, type ActionResult } from "../actions";
 import { SWIM_EVENTS } from "@/lib/swim-events";
+import { SessionSelect } from "@/components/session-select";
 
 const initialState: ActionResult | null = null;
 
@@ -33,20 +34,23 @@ export function CatalogEventsForm({
 
   return (
     <form action={formAction}>
-      <div className="mb-3">
-        <label htmlFor="event_date" className="block text-xs font-medium text-neutral-700">
-          Dia em que estas provas acontecem
-        </label>
-        <input
-          id="event_date"
-          name="event_date"
-          type="date"
-          required
-          min={startDate}
-          max={endDate}
-          defaultValue={startDate}
-          className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
-        />
+      <div className="mb-3 flex flex-wrap gap-3">
+        <div>
+          <label htmlFor="event_date" className="block text-xs font-medium text-neutral-700">
+            Dia em que estas provas acontecem
+          </label>
+          <input
+            id="event_date"
+            name="event_date"
+            type="date"
+            required
+            min={startDate}
+            max={endDate}
+            defaultValue={startDate}
+            className="mt-1 block rounded-md border border-neutral-300 px-3 py-1.5 text-sm shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+          />
+        </div>
+        <SessionSelect id="catalog_session" />
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/get-profile";
 import { getTodaysTraining, getNextRace } from "@/lib/dashboard-data";
 import { listUpcomingCompetitionsCalendar } from "@/lib/competitions-calendar";
+import { SESSION_LABELS } from "@/lib/event-session";
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile();
@@ -36,6 +37,7 @@ export default async function DashboardPage() {
                 <span className="block">{nextRace.competition.name}</span>
                 <span className="block">
                   {new Date(`${nextRace.event.event_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                  {nextRace.event.session && ` · ${SESSION_LABELS[nextRace.event.session]}`}
                 </span>
               </>
             ) : (

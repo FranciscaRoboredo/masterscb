@@ -1,4 +1,5 @@
 export type UserRole = "coach" | "athlete";
+export type EventSession = "manha" | "tarde";
 
 export interface Database {
   public: {
@@ -83,6 +84,7 @@ export interface Database {
           name: string;
           event_date: string;
           event_time: string | null;
+          session: EventSession | null;
           created_at: string;
         };
         Insert: {
@@ -90,11 +92,13 @@ export interface Database {
           name: string;
           event_date: string;
           event_time?: string | null;
+          session?: EventSession | null;
         };
         Update: {
           name?: string;
           event_date?: string;
           event_time?: string | null;
+          session?: EventSession | null;
         };
         Relationships: [];
       };

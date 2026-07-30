@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCompetition, listEventsWithDetails, listAllAthletes } from "../../actions";
 import { AddResultForm } from "../add-result-form";
 import { LocationLink } from "@/components/location-link";
+import { SESSION_LABELS } from "@/lib/event-session";
 
 export default async function CompetitionResultsPage({
   params,
@@ -49,6 +50,7 @@ export default async function CompetitionResultsPage({
               <h3 className="font-medium text-neutral-900">{event.name}</h3>
               <span className="text-sm text-neutral-500">
                 {new Date(`${event.event_date}T00:00:00`).toLocaleDateString("pt-PT")}
+                {event.session && ` · ${SESSION_LABELS[event.session]}`}
               </span>
             </div>
 

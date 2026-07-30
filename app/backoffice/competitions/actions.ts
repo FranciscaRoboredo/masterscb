@@ -109,6 +109,7 @@ export async function listEvents(competitionId: string): Promise<CompetitionEven
     .select("*")
     .eq("competition_id", competitionId)
     .order("event_date", { ascending: true })
+    .order("session", { ascending: true, nullsFirst: false })
     .order("event_time", { ascending: true })
     .returns<CompetitionEvent[]>();
 
@@ -363,6 +364,7 @@ export async function createEvent(
   const name = String(formData.get("name") ?? "").trim();
   const eventDate = String(formData.get("event_date") ?? "").trim();
   const eventTime = String(formData.get("event_time") ?? "").trim();
+  const session = String(formData.get("session") ?? "").trim();
 
   if (!name || !eventDate) {
     return { error: "O nome e a data da prova são obrigatórios." };
@@ -374,6 +376,7 @@ export async function createEvent(
     name,
     event_date: eventDate,
     event_time: eventTime || null,
+    session: session === "manha" || session === "tarde" ? session : null,
   };
   const { error } = await supabase.from("competition_events").insert(payload as never);
 
@@ -394,6 +397,7 @@ export async function updateEvent(
   const name = String(formData.get("name") ?? "").trim();
   const eventDate = String(formData.get("event_date") ?? "").trim();
   const eventTime = String(formData.get("event_time") ?? "").trim();
+  const session = String(formData.get("session") ?? "").trim();
 
   if (!name || !eventDate) {
     return { error: "O nome e a data da prova são obrigatórios." };
@@ -404,6 +408,7 @@ export async function updateEvent(
     name,
     event_date: eventDate,
     event_time: eventTime || null,
+    session: session === "manha" || session === "tarde" ? session : null,
   };
   const { error } = await supabase
     .from("competition_events")
@@ -469,6 +474,8 @@ export async function addCatalogEvents(
   await requireCoach();
 
   const eventDate = String(formData.get("event_date") ?? "").trim();
+  const sessionRaw = String(formData.get("session") ?? "").trim();
+  const session = sessionRaw === "manha" || sessionRaw === "tarde" ? sessionRaw : null;
   const names = formData.getAll("event_names").map(String);
 
   if (!eventDate) {
@@ -480,15 +487,15 @@ export async function addCatalogEvents(
 
   const supabase = createClient();
   const existing = await listEvents(competitionId);
-  const existingKeys = new Set(existing.map((e) => `${e.name}__${e.event_date}`));
-  const toInsert = names.filter((n) => !existingKeys.has(`${n}__${eventDate}`));
+  const existingKeys = new Set(existing.map((e) => `${e.name}__${e.event_date}__${e.session ?? ""}`));
+  const toInsert = names.filter((n) => !existingKeys.has(`${n}__${eventDate}__${session ?? ""}`));
 
   if (toInsert.length === 0) {
-    return { error: "Essas provas já estão adicionadas nesse dia." };
+    return { error: "Essas provas já estão adicionadas nesse dia/sessão." };
   }
 
   const payload: Database["public"]["Tables"]["competition_events"]["Insert"][] = toInsert.map(
-    (name) => ({ competition_id: competitionId, name, event_date: eventDate })
+    (name) => ({ competition_id: competitionId, name, event_date: eventDate, session })
   );
   const { error } = await supabase.from("competition_events").insert(payload as never);
 
