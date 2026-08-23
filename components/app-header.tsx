@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { UserRole } from "@/lib/supabase/database.types";
 
@@ -9,46 +10,44 @@ export function AppHeader({
   role: UserRole;
 }) {
   return (
-    <header className="border-b border-neutral-200 bg-white">
-      <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <nav className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/dashboard" className="text-neutral-500 hover:text-neutral-900">
-            Dashboard
+    <header className="relative overflow-hidden bg-gradient-to-br from-brand-dark to-brand-dark2 text-white">
+      <div
+        aria-hidden
+        className="brand-watermark pointer-events-none absolute -right-12 -top-14 h-[230px] w-[230px] rotate-[8deg] opacity-40 [filter:brightness(0)_invert(1)]"
+      />
+      <div className="relative z-10 mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white p-1">
+              <Image src="/brand/crest.png" alt="SC Braga" width={32} height={32} className="h-full w-full object-contain" />
+            </div>
+            <span className="font-condensed text-sm font-bold tracking-wide">SC Braga Masters</span>
           </Link>
-          {role === "athlete" && (
-            <Link href="/dashboard/provas" className="text-neutral-500 hover:text-neutral-900">
-              Provas
+          <nav className="flex items-center gap-4 font-condensed text-sm font-semibold tracking-wide">
+            <Link href="/dashboard" className="text-white/75 hover:text-white">
+              Dashboard
             </Link>
-          )}
-          {role === "coach" && (
-            <>
-              <Link href="/backoffice" className="text-neutral-500 hover:text-neutral-900">
-                Atletas
+            {role === "athlete" && (
+              <Link href="/dashboard/provas" className="text-white/75 hover:text-white">
+                Provas
               </Link>
-              <Link href="/backoffice/competitions" className="text-neutral-500 hover:text-neutral-900">
-                Competições
+            )}
+            {role === "coach" && (
+              <Link href="/backoffice" className="text-white/75 hover:text-white">
+                Backoffice
               </Link>
-              <Link href="/backoffice/treino" className="text-neutral-500 hover:text-neutral-900">
-                Treino do dia
-              </Link>
-              <Link href="/backoffice/plantel" className="text-neutral-500 hover:text-neutral-900">
-                Plantel
-              </Link>
-              <Link href="/backoffice/cem" className="text-neutral-500 hover:text-neutral-900">
-                CEM
-              </Link>
-            </>
-          )}
-          <Link href="/profile" className="text-neutral-500 hover:text-neutral-900">
-            Perfil
-          </Link>
-        </nav>
-        <div className="flex items-center gap-3 text-sm text-neutral-600">
-          <span>{fullName}</span>
+            )}
+            <Link href="/profile" className="text-white/75 hover:text-white">
+              Perfil
+            </Link>
+          </nav>
+        </div>
+        <div className="flex items-center gap-3 font-condensed text-sm">
+          <span className="text-white/85">{fullName}</span>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
+              className="rounded-md border border-white/25 px-3 py-1.5 font-semibold text-white hover:bg-white/10"
             >
               Sair
             </button>

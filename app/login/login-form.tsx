@@ -81,7 +81,7 @@ export function LoginForm() {
 
   if (status === "sent") {
     return (
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-brand-muted">
         {mode === "forgot-password"
           ? "Enviámos um email para "
           : "Enviámos um link de acesso para "}
@@ -94,7 +94,7 @@ export function LoginForm() {
     return (
       <form onSubmit={handleForgotPassword} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+          <label htmlFor="email" className="block text-sm font-medium text-brand-charcoal">
             Email
           </label>
           <input
@@ -104,7 +104,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+            className="mt-1 block w-full rounded-md border border-brand-line px-3 py-2 shadow-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
             placeholder="tuemail@exemplo.com"
           />
         </div>
@@ -114,7 +114,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
+          className="w-full rounded-md bg-brand-red px-4 py-2 text-sm font-semibold text-white hover:bg-brand-red-deep disabled:opacity-50"
         >
           {status === "loading" ? "A enviar..." : "Enviar email para definir password"}
         </button>
@@ -122,7 +122,7 @@ export function LoginForm() {
         <button
           type="button"
           onClick={() => setMode("password")}
-          className="w-full text-sm text-neutral-500 hover:text-neutral-900"
+          className="w-full text-sm text-brand-muted hover:text-brand-red"
         >
           ← Voltar
         </button>
@@ -134,7 +134,7 @@ export function LoginForm() {
     return (
       <form onSubmit={handleMagicLink} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+          <label htmlFor="email" className="block text-sm font-medium text-brand-charcoal">
             Email
           </label>
           <input
@@ -144,7 +144,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+            className="mt-1 block w-full rounded-md border border-brand-line px-3 py-2 shadow-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
             placeholder="tuemail@exemplo.com"
           />
         </div>
@@ -154,7 +154,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
+          className="w-full rounded-md bg-brand-red px-4 py-2 text-sm font-semibold text-white hover:bg-brand-red-deep disabled:opacity-50"
         >
           {status === "loading" ? "A enviar..." : "Enviar link de acesso"}
         </button>
@@ -162,7 +162,7 @@ export function LoginForm() {
         <button
           type="button"
           onClick={() => setMode("password")}
-          className="w-full text-sm text-neutral-500 hover:text-neutral-900"
+          className="w-full text-sm text-brand-muted hover:text-brand-red"
         >
           ← Entrar com password
         </button>
@@ -173,7 +173,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handlePasswordLogin} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+        <label htmlFor="email" className="block text-sm font-medium text-brand-charcoal">
           Email
         </label>
         <input
@@ -183,13 +183,13 @@ export function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+          className="mt-1 block w-full rounded-md border border-brand-line px-3 py-2 shadow-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
           placeholder="tuemail@exemplo.com"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
+        <label htmlFor="password" className="block text-sm font-medium text-brand-charcoal">
           Password
         </label>
         <input
@@ -199,7 +199,7 @@ export function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+          className="mt-1 block w-full rounded-md border border-brand-line px-3 py-2 shadow-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
         />
       </div>
 
@@ -208,7 +208,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
+        className="w-full rounded-md bg-brand-red px-4 py-2 text-sm font-semibold text-white hover:bg-brand-red-deep disabled:opacity-50"
       >
         {status === "loading" ? "A entrar..." : "Entrar"}
       </button>
@@ -217,14 +217,14 @@ export function LoginForm() {
         <button
           type="button"
           onClick={() => setMode("forgot-password")}
-          className="text-neutral-500 hover:text-neutral-900"
+          className="text-brand-muted hover:text-brand-red"
         >
           Esqueci a password
         </button>
         <button
           type="button"
           onClick={() => setMode("magic-link")}
-          className="text-neutral-500 hover:text-neutral-900"
+          className="text-brand-muted hover:text-brand-red"
         >
           Entrar por link de email
         </button>
