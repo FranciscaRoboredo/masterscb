@@ -34,6 +34,9 @@ export function AppHeader({
               <Link href="/backoffice/plantel" className="text-neutral-500 hover:text-neutral-900">
                 Plantel
               </Link>
+              <Link href="/backoffice/cem" className="text-neutral-500 hover:text-neutral-900">
+                CEM
+              </Link>
             </>
           )}
           <Link href="/profile" className="text-neutral-500 hover:text-neutral-900">
