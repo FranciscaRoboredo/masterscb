@@ -180,6 +180,35 @@ export interface Database {
         };
         Relationships: [];
       };
+      roster_athletes: {
+        Row: {
+          id: string;
+          full_name: string;
+          gender: "M" | "F" | null;
+          birth_date: string | null;
+          federation_number: string | null;
+          club: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          full_name: string;
+          gender?: "M" | "F" | null;
+          birth_date?: string | null;
+          federation_number?: string | null;
+          club?: string;
+          notes?: string | null;
+        };
+        Update: {
+          full_name?: string;
+          gender?: "M" | "F" | null;
+          birth_date?: string | null;
+          federation_number?: string | null;
+          club?: string;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
