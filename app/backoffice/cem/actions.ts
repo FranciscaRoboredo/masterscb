@@ -9,6 +9,12 @@ import { computeCemRankings, type CemResultInput } from "@/lib/cem-ranking";
 import type { LenexStroke } from "@/lib/lenex";
 
 type CemMeet = Database["public"]["Tables"]["cem_meets"]["Row"];
+type CemSwimmer = Database["public"]["Tables"]["cem_swimmers"]["Row"];
+
+// Código LENEX do Sporting Clube de Braga, consistente em todas as provas
+// que já importámos (CLUB code="SCB"), independentemente de como o
+// software de cada organização escreveu o nome/shortname.
+const SC_BRAGA_LENEX_CODE = "SCB";
 
 export type ActionResult = { error: string } | { success: true };
 
@@ -414,4 +420,95 @@ export async function getCemRankings() {
   }));
 
   return computeCemRankings(inputs);
+}
+
+export type UnlinkedScBragaSwimmer = {
+  id: string;
+  license: string;
+  firstName: string;
+  lastName: string;
+  birthDate: string | null;
+  gender: "M" | "F" | null;
+};
+
+// Nadadoras/nadadores do SC Braga que apareceram nos resultados
+// importados mas ainda não têm registo no plantel — candidatas a
+// adicionar com um clique (nome + licença já vêm da FPN, sem erros de
+// transcrição).
+export async function listUnlinkedScBragaSwimmers(): Promise<UnlinkedScBragaSwimmer[]> {
+  const supabase = createClient();
+
+  const { data: club } = await supabase
+    .from("cem_clubs")
+    .select("id")
+    .eq("lenex_code", SC_BRAGA_LENEX_CODE)
+    .maybeSingle<{ id: string }>();
+  if (!club) return [];
+
+  const { data: results } = await supabase
+    .from("cem_results")
+    .select("swimmer_id")
+    .eq("club_id", club.id)
+    .returns<{ swimmer_id: string }[]>();
+  const swimmerIds = [...new Set((results ?? []).map((r) => r.swimmer_id))];
+  if (swimmerIds.length === 0) return [];
+
+  const { data: swimmers } = await supabase
+    .from("cem_swimmers")
+    .select("*")
+    .in("id", swimmerIds)
+    .is("roster_athlete_id", null)
+    .returns<CemSwimmer[]>();
+
+  return (swimmers ?? [])
+    .filter((s) => !s.license.startsWith("NOLIC-")) // sem licença real, nada a ligar
+    .map((s) => ({
+      id: s.id,
+      license: s.license,
+      firstName: s.first_name,
+      lastName: s.last_name,
+      birthDate: s.birth_date,
+      gender: s.gender,
+    }))
+    .sort((a, b) => a.lastName.localeCompare(b.lastName, "pt-PT"));
+}
+
+export async function addCemSwimmerToRoster(swimmerId: string): Promise<ActionResult> {
+  await requireCoach();
+  const supabase = createClient();
+
+  const { data: swimmer, error: fetchError } = await supabase
+    .from("cem_swimmers")
+    .select("*")
+    .eq("id", swimmerId)
+    .single<CemSwimmer>();
+  if (fetchError || !swimmer) return { error: "Nadadora/nadador não encontrado." };
+
+  const { data: rosterRow, error: insertError } = await supabase
+    .from("roster_athletes")
+    .insert({
+      full_name: `${swimmer.first_name} ${swimmer.last_name}`,
+      gender: swimmer.gender,
+      birth_date: swimmer.birth_date,
+      federation_number: swimmer.license,
+    } as never)
+    .select()
+    .single<Database["public"]["Tables"]["roster_athletes"]["Row"]>();
+
+  if (insertError || !rosterRow) {
+    return {
+      error: insertError?.message.includes("duplicate")
+        ? "Já existe uma atleta com esse número de licença no plantel."
+        : insertError?.message ?? "Erro ao adicionar ao plantel.",
+    };
+  }
+
+  await supabase
+    .from("cem_swimmers")
+    .update({ roster_athlete_id: rosterRow.id } as never)
+    .eq("id", swimmerId);
+
+  revalidatePath("/backoffice/plantel");
+  revalidatePath("/backoffice/cem");
+  return { success: true };
 }
