@@ -209,8 +209,162 @@ export interface Database {
         };
         Relationships: [];
       };
+      cem_clubs: {
+        Row: {
+          id: string;
+          lenex_code: string;
+          name: string;
+          created_at: string;
+        };
+        Insert: {
+          lenex_code: string;
+          name: string;
+        };
+        Update: {
+          name?: string;
+        };
+        Relationships: [];
+      };
+      cem_swimmers: {
+        Row: {
+          id: string;
+          license: string;
+          first_name: string;
+          last_name: string;
+          birth_date: string | null;
+          gender: "M" | "F" | null;
+          nation: string | null;
+          roster_athlete_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          license: string;
+          first_name: string;
+          last_name: string;
+          birth_date?: string | null;
+          gender?: "M" | "F" | null;
+          nation?: string | null;
+          roster_athlete_id?: string | null;
+        };
+        Update: {
+          first_name?: string;
+          last_name?: string;
+          birth_date?: string | null;
+          gender?: "M" | "F" | null;
+          nation?: string | null;
+          roster_athlete_id?: string | null;
+        };
+        Relationships: [];
+      };
+      cem_meets: {
+        Row: {
+          id: string;
+          name: string;
+          city: string | null;
+          course: "SCM" | "LCM" | null;
+          organizer: string | null;
+          start_date: string;
+          end_date: string | null;
+          counts_for_cem: boolean;
+          source_file: string | null;
+          created_at: string;
+        };
+        Insert: {
+          name: string;
+          city?: string | null;
+          course?: "SCM" | "LCM" | null;
+          organizer?: string | null;
+          start_date: string;
+          end_date?: string | null;
+          counts_for_cem?: boolean;
+          source_file?: string | null;
+        };
+        Update: {
+          counts_for_cem?: boolean;
+        };
+        Relationships: [];
+      };
+      cem_events: {
+        Row: {
+          id: string;
+          meet_id: string;
+          lenex_eventid: string;
+          gender: "M" | "F" | "X";
+          distance: number;
+          stroke: "FREE" | "BACK" | "BREAST" | "FLY" | "MEDLEY";
+          relaycount: number;
+          created_at: string;
+        };
+        Insert: {
+          meet_id: string;
+          lenex_eventid: string;
+          gender: "M" | "F" | "X";
+          distance: number;
+          stroke: "FREE" | "BACK" | "BREAST" | "FLY" | "MEDLEY";
+          relaycount?: number;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      cem_agegroups: {
+        Row: {
+          id: string;
+          event_id: string;
+          lenex_agegroupid: string;
+          age_min: number | null;
+          age_max: number | null;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          lenex_agegroupid: string;
+          age_min?: number | null;
+          age_max?: number | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      cem_results: {
+        Row: {
+          id: string;
+          event_id: string;
+          agegroup_id: string | null;
+          swimmer_id: string;
+          club_id: string | null;
+          place_in_file: number | null;
+          swimtime: string | null;
+          entrytime: string | null;
+          entrycourse: string | null;
+          dsv_points: number | null;
+          lenex_resultid: string | null;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          agegroup_id?: string | null;
+          swimmer_id: string;
+          club_id?: string | null;
+          place_in_file?: number | null;
+          swimtime?: string | null;
+          entrytime?: string | null;
+          entrycourse?: string | null;
+          dsv_points?: number | null;
+          lenex_resultid?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
     };
-    Views: Record<string, never>;
+    Views: {
+      cem_meet_stats: {
+        Row: {
+          meet_id: string;
+          swimmers_count: number;
+          clubs_count: number;
+          results_count: number;
+        };
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       user_role: UserRole;

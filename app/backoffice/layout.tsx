@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/get-profile";
-import { AppHeader } from "@/components/app-header";
+import { Sidebar } from "@/components/sidebar";
 
 export default async function BackofficeLayout({
   children,
@@ -18,9 +18,9 @@ export default async function BackofficeLayout({
   }
 
   return (
-    <>
-      <AppHeader fullName={profile.full_name || profile.email} role={profile.role} />
-      {children}
-    </>
+    <div className="flex min-h-screen">
+      <Sidebar fullName={profile.full_name || profile.email} />
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
   );
 }

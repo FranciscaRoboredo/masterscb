@@ -1,9 +1,14 @@
 import { listRoster } from "./actions";
 import { NewRosterForm } from "./roster-form";
 import { RosterRow } from "./roster-row";
+import { CemSuggestions } from "./cem-suggestions";
+import { listUnlinkedScBragaSwimmers } from "../cem/actions";
 
 export default async function PlantelPage() {
-  const roster = await listRoster();
+  const [roster, cemSuggestions] = await Promise.all([
+    listRoster(),
+    listUnlinkedScBragaSwimmers(),
+  ]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
@@ -12,6 +17,8 @@ export default async function PlantelPage() {
         Registo de atletas licenciadas, independente de terem conta de acesso à app.
         Útil para inscrições oficiais e gestão do escalão etário.
       </p>
+
+      <CemSuggestions swimmers={cemSuggestions} />
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-neutral-900">Adicionar atleta ao plantel</h2>

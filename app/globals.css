@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Marca de água do "Matação" (o tubarão), usada como decoração de fundo
+   na sidebar do backoffice e na topbar da área da atleta. Ficheiro real
+   em vez de base64 embutido — mais leve e cacheável pelo browser. */
+.brand-watermark {
+  background-image: url("/brand/matacao-shark.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
