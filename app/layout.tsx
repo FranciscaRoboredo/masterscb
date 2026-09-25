@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
-import { Big_Shoulders_Display, Barlow, Barlow_Condensed } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 // Tipos de letra da marca SC Braga Masters: Big Shoulders Display para
 // títulos "de estádio", Barlow para texto corrido, Barlow Condensed para
 // tudo o que é rótulo/navegação/UI compacta.
-const bigShoulders = Big_Shoulders_Display({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+// Auto-hospedados (ficheiros em app/fonts/, extraídos do Google Fonts) em
+// vez de next/font/google, para o build não depender de ir buscar as fontes
+// à rede — isso estava a fazer o deploy no Vercel falhar.
+const bigShoulders = localFont({
+  src: "./fonts/big-shoulders-display-var.woff2",
+  weight: "600 800",
   variable: "--font-big-shoulders",
 });
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const barlow = localFont({
+  src: [
+    { path: "./fonts/barlow-400.woff2", weight: "400" },
+    { path: "./fonts/barlow-500.woff2", weight: "500" },
+    { path: "./fonts/barlow-600.woff2", weight: "600" },
+    { path: "./fonts/barlow-700.woff2", weight: "700" },
+  ],
   variable: "--font-barlow",
 });
-const barlowCondensed = Barlow_Condensed({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const barlowCondensed = localFont({
+  src: [
+    { path: "./fonts/barlow-condensed-500.woff2", weight: "500" },
+    { path: "./fonts/barlow-condensed-600.woff2", weight: "600" },
+    { path: "./fonts/barlow-condensed-700.woff2", weight: "700" },
+  ],
   variable: "--font-barlow-condensed",
 });
 
